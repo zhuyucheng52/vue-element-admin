@@ -9,7 +9,7 @@
           </el-button>
         </el-col>
         <el-col :span="8" :offset="10">
-          <el-input placeholder="请输入与户名,用户姓名或手机号搜索" v-model="listQuery.q" class="input-with-select"
+          <el-input placeholder="请输入用户名,用户姓名或手机号搜索" v-model="listQuery.q" class="input-with-select"
                     @keyup.enter.native="getList">
             <el-button slot="append" icon="el-icon-search" @click="getList"></el-button>
           </el-input>
@@ -106,7 +106,7 @@
     </el-dialog>
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="deleteConfirmVisible">
-      确认删除用户 <b>{{ temp.name }}</b>?
+      确认删除账户 <b>{{ temp.username }}</b>?
       <div slot="footer" class="dialog-footer">
         <el-button @click="deleteConfirmVisible = false">
           取消
@@ -122,7 +122,6 @@
 
 <script>
   import { addUser, deleteUser, getUsers, updateUser } from '@/api/user'
-  import { fetchList, updateArticle } from '@/api/article'
   import waves from '@/directive/waves' // waves directive
   import { parseTime, trueOrFalse } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -238,10 +237,9 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          // TODO yucheng
           const tempData = Object.assign({}, this.temp)
           addUser(tempData).then(response => {
-            getUsers()
+            this.getList()
             this.dialogFormVisible = false
             this.$notify({
               title: '提示',

@@ -45,10 +45,10 @@ export function logout() {
   })
 }
 
-export function getUsers(listQuery) {
+export function getUsers(params) {
   return request({
     url: '/users',
     method: 'get',
-    params: listQuery
+    params
   })
 }

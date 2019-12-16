@@ -1,11 +1,21 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
-        添加
-      </el-button>
+      <el-row>
+        <el-col :span="6">
+          <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus"
+                     @click="handleCreate">
+            添加
+          </el-button>
+        </el-col>
+        <el-col :span="8" :offset="10">
+          <el-input placeholder="请输入商品ID或商品名称搜索" v-model="listQuery.q" class="input-with-select"
+                    @keyup.enter.native="getList">
+            <el-button slot="append" icon="el-icon-search" @click="getList"></el-button>
+          </el-input>
+        </el-col>
+      </el-row>
     </div>
-
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -15,19 +25,24 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="80px">
+      <el-table-column label="ID" prop="id" align="center" width="80">
         <template slot-scope="scope">
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="名称" min-width="700px" align="center">
+      <el-table-column label="名称" min-width="120" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="禁用状态" width="100px" align="center">
+      <el-table-column label="单价" min-width="160" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.disabled }}</span>
+          <span>{{ scope.row.price }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="备注" min-width="160" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.remark }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
@@ -47,10 +62,7 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:80px;">
         <el-form-item label="名称">
-          <el-input v-model="temp.name" />
-        </el-form-item>
-        <el-form-item label="禁用">
-          <el-switch v-model="temp.disabled" active-color="red"></el-switch>
+          <el-input v-model="temp.name"/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息" />
@@ -67,7 +79,7 @@
     </el-dialog>
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="deleteConfirmVisible">
-      确认删除ID为{{ temp.id }}的用户?
+      确认删除商品 <b>{{ temp.name }}</b>?
       <div slot="footer" class="dialog-footer">
         <el-button @click="deleteConfirmVisible = false">
           取消
@@ -78,36 +90,27 @@
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">Confirm</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
-import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+  import { getProducts, deleteProduct, updateProduct, addProduct } from '@/api/product'
+  import waves from '@/directive/waves' // waves directive
+  import { parseTime, trueOrFalse } from '@/utils'
+  import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
-const calendarTypeOptions = [
+  const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' }
 ]
 
-// // arr to obj, such as { CN : "China", US : "USA" }
+// arr to obj, such as { CN : "China", US : "USA" }
 const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
   acc[cur.key] = cur.display_name
   return acc
 }, {})
 
 export default {
-  name: 'User',
+  name: 'Product',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -132,19 +135,12 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        q: undefined,
       },
-      importanceOptions: [1, 2, 3],
-      calendarTypeOptions,
-      showReviewer: false,
       temp: {
         id: undefined,
         name: undefined,
-        disabled: 0,
-        remark: ''
+        remark: undefined
       },
       dialogFormVisible: false,
       deleteConfirmVisible: false,
@@ -154,13 +150,11 @@ export default {
         create: 'Create'
       },
       dialogPvVisible: false,
-      pvData: [],
       rules: {
         type: [{ required: true, message: 'type is required', trigger: 'change' }],
         timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
-      downloadLoading: false
     }
   },
   created() {
@@ -169,14 +163,10 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+      getProducts(this.listQuery).then(response => {
+        this.list = response.data.list
+        this.total = response.data.paginator.totalCount
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -185,7 +175,7 @@ export default {
     },
     handleModifyStatus(row, status) {
       this.$message({
-        message: '操作Success',
+        message: '更新成功',
         type: 'success'
       })
       row.status = status
@@ -194,15 +184,13 @@ export default {
       this.temp = {
         id: undefined,
         name: undefined,
-        disabled: 0,
-        remark: ''
+        remark: undefined
       }
     },
     handleCreate() {
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
-      console.log(this.temp)
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
@@ -210,10 +198,9 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
+          const tempData = Object.assign({}, this.temp)
+          addProduct(tempData).then(response => {
+            this.getList()
             this.dialogFormVisible = false
             this.$notify({
               title: '提示',
@@ -238,15 +225,8 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
+          updateProduct(tempData).then(response => {
+            this.getList()
             this.dialogFormVisible = false
             this.$notify({
               title: '提示',
@@ -263,29 +243,18 @@ export default {
       this.deleteConfirmVisible = true
     },
     doDelete() {
-      this.deleteConfirmVisible = false
-      this.$notify({
-        title: '提示',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
+      const tempData = Object.assign({}, this.temp)
+      deleteProduct(tempData.id).then(response => {
+        this.getList()
+        this.deleteConfirmVisible = false
+        this.$notify({
+          title: '提示',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
       })
     },
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
-      })
-    },
-    formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
-    }
   }
 }
 </script>
