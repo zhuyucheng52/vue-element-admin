@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function getRoutes() {
+export function getRoutes(params) {
   return request({
     url: '/routes',
-    method: 'get'
+    method: 'get',
+    params
   })
 }
 

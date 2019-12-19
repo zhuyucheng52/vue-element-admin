@@ -52,9 +52,9 @@
           <span>{{ scope.row.birthday | parseTime('{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="邮箱" width="240">
+      <el-table-column label="角色" width="240">
         <template slot-scope="scope">
-          <span>{{ scope.row.email }}</span>
+          <span>{{ scope.row.roles.map(r => r.name).join(',') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
@@ -69,10 +69,12 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit"
+                @pagination="getList"/>
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:80px;">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" v-if="dialogFormVisible">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
+               style="width: 400px; margin-left:80px;">
         <el-form-item label="用户名">
           <el-input v-model="temp.username"/>
         </el-form-item>
@@ -80,19 +82,23 @@
           <el-input v-model="temp.password" type="password" autocomplete="off"/>
         </el-form-item>
         <el-form-item label="姓名">
-          <el-input v-model="temp.name" />
+          <el-input v-model="temp.name"/>
         </el-form-item>
         <el-form-item label="电话">
-          <el-input v-model="temp.mobile" />
+          <el-input v-model="temp.mobile"/>
         </el-form-item>
         <el-form-item label="生日">
-          <el-date-picker v-model="temp.birthday" type="date" placeholder="请选择生日" />
+          <el-date-picker v-model="temp.birthday" type="date" placeholder="请选择生日"/>
         </el-form-item>
-        <el-form-item label="邮箱">
-          <el-input v-model="temp.email" />
+        <el-form-item label="角色">
+          <!--<el-checkbox v-for="(role, index) in roles" v-model="temp.roles" :key="index" :checked="roleCheckedComputed(role)">{{ role.name }}</el-checkbox>-->
+          <el-checkbox v-for="(role, index) in roles" :key="index" :checked="roleCheckedComputed(role)"
+                       @change="chengeCheckedRole(role)">{{
+            role.name }}
+          </el-checkbox>
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息" />
+          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -122,8 +128,8 @@
 
 <script>
   import { addUser, deleteUser, getUsers, updateUser } from '@/api/user'
+  import { getRoles } from '@/api/role'
   import waves from '@/directive/waves' // waves directive
-  import { parseTime, trueOrFalse } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
   const calendarTypeOptions = [
@@ -171,10 +177,11 @@ export default {
         name: undefined,
         mobile: undefined,
         birthday: undefined,
-        email: undefined,
         remark: undefined,
-        disabled: 0
+        disabled: 0,
+        roles: []
       },
+      roles: [],
       dialogFormVisible: false,
       deleteConfirmVisible: false,
       dialogStatus: '',
@@ -187,13 +194,35 @@ export default {
         type: [{ required: true, message: 'type is required', trigger: 'change' }],
         timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
+      }
     }
   },
   created() {
     this.getList()
   },
+  computed: {
+    roleCheckedComputed() {
+      return function(role) {
+        return this.temp.roles.filter(r => r.id === role.id).length > 0
+      }
+    }
+  },
   methods: {
+
+    chengeCheckedRole(role) {
+      let checked = this.temp.roles.filter(r => r.id === role.id).length > 0
+      if (!checked) {
+        this.temp.roles.push(role)
+      } else {
+        const index = this.temp.roles.findIndex((value, index, obj) => {
+          if (value.id === role.id) {
+            return true
+          }
+          return false
+        })
+        this.temp.roles.splice(index, 1)
+      }
+    },
     getList() {
       this.listLoading = true
       getUsers(this.listQuery).then(response => {
@@ -201,10 +230,6 @@ export default {
         this.total = response.data.paginator.totalCount
         this.listLoading = false
       })
-    },
-    handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
     },
     handleModifyStatus(row, status) {
       this.$message({
@@ -221,9 +246,9 @@ export default {
         name: undefined,
         mobile: undefined,
         birthday: undefined,
-        email: undefined,
         remark: undefined,
-        disabled: 0
+        disabled: 0,
+        roles: []
       }
     },
     handleCreate() {
@@ -250,20 +275,26 @@ export default {
           })
         }
       })
-    },
+    }
+    ,
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+      getRoles().then(response => {
+        this.roles = response.data.list
+
+        this.temp = Object.assign({}, row)
+        this.temp.timestamp = new Date(this.temp.timestamp)
+        this.dialogStatus = 'update'
+        this.dialogFormVisible = true
+        this.$nextTick(() => {
+          this.$refs['dataForm'].clearValidate()
+        })
       })
-    },
+    }
+    ,
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
+          const tempData = this.temp
           updateUser(tempData).then(response => {
             this.getList()
             this.dialogFormVisible = false
