@@ -122,6 +122,19 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/role',
+    component: Layout,
+    redirect: '/role/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/role/Role.vue'),
+        name: 'role',
+        meta: { title: '角色', icon: 'user', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/product',
     component: Layout,
     redirect: '/product/index',

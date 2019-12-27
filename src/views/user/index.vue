@@ -319,6 +319,7 @@
       doDelete() {
         deleteUser(this.temp.id).then(response => {
           this.getList()
+          this.clearTemp()
           this.$notify.success({
             title: '提示',
             message: '删除成功'

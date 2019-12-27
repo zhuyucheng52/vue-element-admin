@@ -46,7 +46,9 @@ service.interceptors.response.use(
   response => {
     const res = response.data
     if (response.status === 200) {
-      // setToken(response.headers['TOKEN'])
+      if (!!response.headers['TOKEN']) {
+        setToken(response.headers['TOKEN'])
+      }
       return res
     } else if (response.status === 410) {
       MessageBox.confirm('您已经退出系统,请重新登录!', '确认', {
@@ -71,7 +73,7 @@ service.interceptors.response.use(
     }
   },
   error => {
-    console.log('err' + error) // for debug
+    console.log('response error: ' + error) // for debug
     Message({
       message: error.message,
       type: 'error',
