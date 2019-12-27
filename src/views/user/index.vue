@@ -11,7 +11,7 @@
         <el-col :span="8" :offset="10">
           <el-input placeholder="请输入用户名,用户姓名或手机号搜索" v-model="listQuery.q" class="input-with-select"
                     @keyup.enter.native="getList">
-            <el-button slot="append" icon="el-icon-search" @click="getList"></el-button>
+            <el-button slot="append" icon="el-icon-search" @click="getList"/>
           </el-input>
         </el-col>
       </el-row>
@@ -56,7 +56,7 @@
           <span>{{ scope.row.roles.map(r => r.name).join(',') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="禁用" width="70">
+      <el-table-column label="禁用" width="70" align="center">
         <template slot-scope="scope">
           <el-switch v-model="scope.row.disabled" @change="checkDisabledStatus(scope.row)"/>
         </template>
@@ -167,7 +167,6 @@
 <script>
   import { addUser, deleteUser, getUsers, getUserById, updateUser } from '@/api/user'
   import { getRoles } from '@/api/role'
-  import waves from '@/directive/waves' // waves directive
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
   //   const calendarTypeOptions = [
