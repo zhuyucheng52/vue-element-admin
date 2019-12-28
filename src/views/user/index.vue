@@ -146,7 +146,7 @@
           <el-input v-model="temp.mobile"/>
         </el-form-item>
         <el-form-item label="生日">
-          <el-date-picker v-model="temp.birthday" type="date" placeholder="请选择生日"/>
+          <el-date-picker v-model="temp.birthday" type="date" placeholder="请选择生日" style="width: 100%"/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
@@ -246,12 +246,19 @@
       handleCreate() {
         this.resetTemp()
         this.addFormVisible = true
+        this.$nextTick(() => {
+          this.$refs['addForm'].clearValidate()
+        })
       },
       createData() {
         this.$refs['addForm'].validate((valid) => {
           if (valid) {
             this.temp.disabled = false
             addUser(this.temp).then(response => {
+              if (this.handleErrorMsg(response)) {
+                return
+              }
+
               this.$nextTick(() => {
                 this.getList()
                 this.clearTemp()
@@ -288,14 +295,28 @@
           this.$nextTick(() => {
             this.temp = response.data
             this.editFormVisible = true
+            this.$nextTick(() => {
+              this.$refs['editForm'].clearValidate()
+            })
           })
         })
+      },
+      handleErrorMsg(response) {
+        if (response.success !== 1) {
+          this.$message.error(response.errorMsg)
+          return true
+        }
+        return false
       },
       updateData() {
         this.$refs['editForm'].validate((valid) => {
           if (valid) {
             this.temp.password = undefined
             updateUser(this.temp).then(response => {
+              if (this.handleErrorMsg(response)) {
+                return
+              }
+
               this.getList()
               this.clearTemp()
               this.$notify.success({
@@ -330,4 +351,3 @@
   }
 </script>
 
-<!-- TODO yucheng 添加用户名校验逻辑 -->
