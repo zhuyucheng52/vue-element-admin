@@ -92,7 +92,7 @@
           <el-input v-model="temp.name"/>
         </el-form-item>
         <el-form-item label="角色" prop="roles">
-          <el-select v-model="temp.roles" multiple placeholder="请选择" style="width: 100%">
+          <el-select v-model="temp.roles" value-key="id" multiple clearable placeholder="请选择" style="width: 100%">
             <el-option
               v-for="item in allRoles"
               :key="item.id"
@@ -133,7 +133,7 @@
           <el-input v-model="temp.name"/>
         </el-form-item>
         <el-form-item label="角色" prop="roles">
-          <el-select v-model="temp.roles" multiple placeholder="请选择" style="width: 100%">
+          <el-select v-model="temp.roles" value-key="id" multiple clearable placeholder="请选择" style="width: 100%">
             <el-option
               v-for="item in allRoles"
               :key="item.id"
@@ -329,3 +329,5 @@
     }
   }
 </script>
+
+<!-- TODO yucheng 添加用户名校验逻辑 -->
