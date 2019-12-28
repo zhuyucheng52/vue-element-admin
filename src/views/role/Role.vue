@@ -36,9 +36,7 @@
       </el-table-column>
       <el-table-column label="权限" min-width="80" align="center">
         <template slot-scope="scope">
-          <el-tooltip :content="scope.row.remark" placement="top-start">
-            <span>{{ scope.row.remark }}</span>
-          </el-tooltip>
+          <span>{{ scope.row.permissions.map(r => r.name).join(',') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
@@ -73,7 +71,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="clearTemp">
+        <el-button @click="clearForm">
           取消
         </el-button>
         <el-button type="primary" @click="createData">
@@ -98,7 +96,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="clearTemp">
+        <el-button @click="clearForm">
           取消
         </el-button>
         <el-button type="primary" @click="updateData">
@@ -110,23 +108,13 @@
 </template>
 
 <script>
-  // import { addUser, deleteUser, getUsers, getUserById, updateUser } from '@/api/user'
   import { getRoles, getRoleById, updateRole, deleteRole } from '@/api/role'
   import Pagination from '@/components/Pagination'
   import { addRole } from '../../api/role' // secondary package based on el-pagination
 
-  //   const calendarTypeOptions = [
-  //   { key: 'CN', display_name: 'China' }
-  // ]
-
-  // arr to obj, such as { CN : "China", US : "USA" }
-  // const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  //   acc[cur.key] = cur.display_name
-  //   return acc
-  // }, {})
 
   export default {
-    name: 'User',
+    name: 'Role',
     components: { Pagination },
     data() {
       return {
@@ -138,7 +126,9 @@
           limit: 10,
           q: undefined
         },
-        temp: {},
+        temp: {
+          permissions: []
+        },
         addFormVisible: false,
         editFormVisible: false,
         rules: {
@@ -165,9 +155,11 @@
     },
     methods: {
       resetTemp() {
-        this.temp = {}
+        this.temp = {
+          permissions: []
+        }
       },
-      clearTemp() {
+      clearForm() {
         this.resetTemp()
         this.addFormVisible = false
         this.editFormVisible = false
@@ -189,7 +181,7 @@
           addRole(this.temp).then(response => {
             this.$nextTick(() => {
               this.getList()
-              this.clearTemp()
+              this.clearForm()
             })
           })
         })
@@ -204,7 +196,7 @@
         updateRole(this.temp).then(response => {
           this.$nextTick(() => {
             this.getList()
-            this.clearTemp()
+            this.clearForm()
           })
         })
       },
@@ -222,7 +214,7 @@
         deleteRole(this.temp.id).then(response => {
           this.$nextTick(() => {
             this.getList()
-            this.clearTemp()
+            this.clearForm()
           })
         })
       }
