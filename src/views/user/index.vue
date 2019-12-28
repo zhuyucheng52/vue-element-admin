@@ -217,7 +217,6 @@
     },
     created() {
       this.getList()
-      this.getAllRoles()
     },
     methods: {
       getAllRoles() {
@@ -247,6 +246,7 @@
         this.resetTemp()
         this.addFormVisible = true
         this.$nextTick(() => {
+          this.getAllRoles()
           this.$refs['addForm'].clearValidate()
         })
       },
@@ -293,6 +293,7 @@
       handleUpdate(row) {
         getUserById(row.id).then(response => {
           this.$nextTick(() => {
+            this.getAllRoles()
             this.temp = response.data
             this.editFormVisible = true
             this.$nextTick(() => {
