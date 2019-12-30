@@ -60,11 +60,11 @@
     <el-dialog title="添加角色" :visible.sync="addFormVisible">
       <el-form ref="addForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
                style="width: 400px; margin-left:80px;">
-        <el-form-item label="角色名称" prop="name">
+        <el-form-item label="名称" prop="name">
           <el-input v-model="temp.name"/>
         </el-form-item>
         <el-form-item label="权限" prop="permissions">
-          <el-input v-model="temp.permissions"/>
+          <el-tree ref="addPermissionTree" :data="permissionTree" :props="defaultProps" node-key="id" getCheckedNodes="" default-expand-all show-checkbox check-on-click-node/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
@@ -85,11 +85,11 @@
     <el-dialog title="编辑用户" :visible.sync="editFormVisible">
       <el-form ref="editForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
                style="width: 400px; margin-left:80px;">
-        <el-form-item label="角色名称" prop="name">
+        <el-form-item label="名称" prop="name">
           <el-input v-model="temp.name"/>
         </el-form-item>
         <el-form-item label="权限" prop="permissions">
-          <el-input v-model="temp.permissions"/>
+          <el-tree ref="editPermissionTree" :data="permissionTree" :props="defaultProps" node-key="id" :default-checked-keys="getDefaultCheckedKeys" default-expand-all show-checkbox check-on-click-node/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
@@ -108,9 +108,9 @@
 </template>
 
 <script>
-  import { getRoles, getRoleById, updateRole, deleteRole } from '@/api/role'
+  import { getRoles, getRoleById, updateRole, deleteRole, addRole} from '@/api/role'
   import Pagination from '@/components/Pagination'
-  import { addRole } from '../../api/role' // secondary package based on el-pagination
+  import { getPermissionTree } from '@/api/permission'
 
 
   export default {
@@ -129,31 +129,38 @@
         temp: {
           permissions: []
         },
+        permissionTree: [],
+        defaultProps: {
+          label: 'name',
+          children: 'children'
+        },
         addFormVisible: false,
         editFormVisible: false,
         rules: {
-          // username: [
-          //   { required: true, message: '用户名不能为空', trigger: 'blur' }
-          // ],
-          // password: [
-          //   { required: true, message: '密码不能为空', trigger: 'blur' }
-          // ],
-          // name: [
-          //   { required: true, message: '姓名不能为空', trigger: 'blur' }
-          // ],
-          // mobile: [
-          //   { required: true, message: '电话不能为空', trigger: 'blur' },
-          // ],
-          // roles: [
-          //   { required: true, message: '角色不能为空', trigger: 'blur' }
-          // ]
+          name: [
+            { required: true, message: '角色名称不能为空', trigger: 'blur' }
+          ],
         }
       }
     },
     created() {
       this.getList()
     },
+    computed: {
+      getDefaultCheckedKeys() {
+        const keys = this.temp.permissions.filter(r => r.parentId !== 0).map(p => p.id)
+        console.log(keys)
+        return keys
+      }
+    },
     methods: {
+      handleErrorMsg(response) {
+        if (response.success !== 1) {
+          this.$message.error(response.errorMsg)
+          return true
+        }
+        return false
+      },
       resetTemp() {
         this.temp = {
           permissions: []
@@ -163,6 +170,8 @@
         this.resetTemp()
         this.addFormVisible = false
         this.editFormVisible = false
+        this.$refs['editForm'].clearValidate()
+        this.$refs['addForm'].clearValidate()
       },
       getList() {
         this.listLoading = true
@@ -175,29 +184,59 @@
       handleCreate() {
         this.resetTemp()
         this.addFormVisible = true
+        this.$nextTick(() => {
+          this.getPermissions()
+        })
       },
       createData() {
         this.$refs['addForm'].validate(valid => {
-          addRole(this.temp).then(response => {
-            this.$nextTick(() => {
-              this.getList()
-              this.clearForm()
+          if (valid) {
+            const checkedNodes = this.$refs.addPermissionTree.getCheckedNodes()
+            const halfCheckedNodes = this.$refs.addPermissionTree.getHalfCheckedNodes()
+            this.temp.permissions = [...checkedNodes, ...halfCheckedNodes]
+            addRole(this.temp).then(response => {
+              if (this.handleErrorMsg(response)) {
+                return
+              }
+              this.$nextTick(() => {
+                this.getList()
+                this.clearForm()
+              })
             })
-          })
+          }
+        })
+      },
+      getPermissions() {
+        getPermissionTree().then(response => {
+          this.permissionTree = response.data
         })
       },
       handleUpdate(row) {
         getRoleById(row.id).then(response => {
           this.temp = response.data
           this.editFormVisible = true
+          this.$nextTick(() => {
+            this.getPermissions()
+          })
         })
       },
       updateData() {
-        updateRole(this.temp).then(response => {
-          this.$nextTick(() => {
-            this.getList()
-            this.clearForm()
-          })
+        this.$refs['addForm'].validate(valid => {
+          if (valid) {
+            const checked = this.$refs.editPermissionTree.getCheckedNodes()
+            const halfChecked = this.$refs.editPermissionTree.getHalfCheckedNodes()
+            this.temp.permissions = [...checked, ...halfChecked]
+            updateRole(this.temp).then(response => {
+              if (this.handleErrorMsg(response)) {
+                return
+              }
+
+              this.$nextTick(() => {
+                this.getList()
+                this.clearForm()
+              })
+            })
+          }
         })
       },
       handleDelete(row) {

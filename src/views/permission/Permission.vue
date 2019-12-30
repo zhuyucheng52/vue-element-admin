@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-tree :data="list" :props="defaultProps" align="center" default-expand-all/>
+    <el-tree :data="list" :props="defaultProps" default-expand-all/>
   </div>
 </template>
 

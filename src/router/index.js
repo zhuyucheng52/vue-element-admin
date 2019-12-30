@@ -134,19 +134,19 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/permission',
-    component: Layout,
-    redirect: '/permission/index',
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/permission/Permission.vue'),
-        name: 'permission',
-        meta: { title: '权限', icon: 'user', noCache: true }
-      }
-    ]
-  },
+  // {
+  //   path: '/permission',
+  //   component: Layout,
+  //   redirect: '/permission/index',
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       component: () => import('@/views/permission/Permission.vue'),
+  //       name: 'permission',
+  //       meta: { title: '权限', icon: 'user', noCache: true }
+  //     }
+  //   ]
+  // },
   {
     path: '/product',
     component: Layout,
