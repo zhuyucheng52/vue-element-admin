@@ -24,10 +24,9 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="80">
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
+      <el-table-column
+        type="index"
+        width="50" align="center">
       </el-table-column>
       <el-table-column label="用户名" width="160" align="center">
         <template slot-scope="scope">
@@ -112,7 +111,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="clearTemp">
+        <el-button @click="clearAddForm">
           取消
         </el-button>
         <el-button type="primary" @click="createData">
@@ -153,7 +152,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="clearTemp">
+        <el-button @click="clearEditForm">
           取消
         </el-button>
         <el-button type="primary" @click="updateData">
@@ -168,16 +167,6 @@
   import { addUser, deleteUser, getUsers, getUserById, updateUser } from '@/api/user'
   import { getRoles } from '@/api/role'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
-  //   const calendarTypeOptions = [
-  //   { key: 'CN', display_name: 'China' }
-  // ]
-
-  // arr to obj, such as { CN : "China", US : "USA" }
-  // const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  //   acc[cur.key] = cur.display_name
-  //   return acc
-  // }, {})
 
   export default {
     name: 'User',
@@ -229,6 +218,16 @@
           roles: []
         }
       },
+      clearAddForm() {
+        this.resetTemp()
+        this.addFormVisible = false
+        this.$refs['addForm'].clearValidate()
+      },
+      clearEditForm() {
+        this.resetTemp()
+        this.editFormVisible = false
+        this.$refs['editForm'].clearValidate()
+      },
       clearTemp() {
         this.resetTemp()
         this.addFormVisible = false
@@ -261,7 +260,7 @@
 
               this.$nextTick(() => {
                 this.getList()
-                this.clearTemp()
+                this.clearAddForm()
               })
               this.$notify.success({
                 title: '提示',
@@ -296,9 +295,6 @@
             this.getAllRoles()
             this.temp = response.data
             this.editFormVisible = true
-            this.$nextTick(() => {
-              this.$refs['editForm'].clearValidate()
-            })
           })
         })
       },
@@ -314,12 +310,8 @@
           if (valid) {
             this.temp.password = undefined
             updateUser(this.temp).then(response => {
-              if (this.handleErrorMsg(response)) {
-                return
-              }
-
               this.getList()
-              this.clearTemp()
+              this.clearEditForm()
               this.$notify.success({
                 title: '提示',
                 message: '更新成功'

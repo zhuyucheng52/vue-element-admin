@@ -24,10 +24,9 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="80">
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
+      <el-table-column
+        type="index"
+        width="50" align="center">
       </el-table-column>
       <el-table-column label="角色名称" width="260" align="center">
         <template slot-scope="scope">
@@ -71,7 +70,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="clearForm">
+        <el-button @click="clearAddForm">
           取消
         </el-button>
         <el-button type="primary" @click="createData">
@@ -96,7 +95,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="clearForm">
+        <el-button @click="clearEditForm">
           取消
         </el-button>
         <el-button type="primary" @click="updateData">
@@ -148,30 +147,24 @@
     },
     computed: {
       getDefaultCheckedKeys() {
-        const keys = this.temp.permissions.filter(r => r.parentId !== 0).map(p => p.id)
-        console.log(keys)
-        return keys
+        return this.temp.permissions.filter(r => r.parentId !== 0).map(p => p.id)
       }
     },
     methods: {
-      handleErrorMsg(response) {
-        if (response.success !== 1) {
-          this.$message.error(response.errorMsg)
-          return true
-        }
-        return false
-      },
       resetTemp() {
         this.temp = {
           permissions: []
         }
       },
-      clearForm() {
+      clearAddForm() {
         this.resetTemp()
         this.addFormVisible = false
+        this.$refs['addForm'].clearValidate()
+      },
+      clearEditForm() {
+        this.resetTemp()
         this.editFormVisible = false
         this.$refs['editForm'].clearValidate()
-        this.$refs['addForm'].clearValidate()
       },
       getList() {
         this.listLoading = true
@@ -195,12 +188,9 @@
             const halfCheckedNodes = this.$refs.addPermissionTree.getHalfCheckedNodes()
             this.temp.permissions = [...checkedNodes, ...halfCheckedNodes]
             addRole(this.temp).then(response => {
-              if (this.handleErrorMsg(response)) {
-                return
-              }
               this.$nextTick(() => {
                 this.getList()
-                this.clearForm()
+                this.clearAddForm()
               })
             })
           }
@@ -227,13 +217,9 @@
             const halfChecked = this.$refs.editPermissionTree.getHalfCheckedNodes()
             this.temp.permissions = [...checked, ...halfChecked]
             updateRole(this.temp).then(response => {
-              if (this.handleErrorMsg(response)) {
-                return
-              }
-
               this.$nextTick(() => {
                 this.getList()
-                this.clearForm()
+                this.clearEditForm()
               })
             })
           }
@@ -253,7 +239,7 @@
         deleteRole(this.temp.id).then(response => {
           this.$nextTick(() => {
             this.getList()
-            this.clearForm()
+            this.resetTemp()
           })
         })
       }

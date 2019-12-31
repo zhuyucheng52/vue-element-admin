@@ -49,6 +49,14 @@ service.interceptors.response.use(
       if (!!response.headers['TOKEN']) {
         setToken(response.headers['TOKEN'])
       }
+      if (res.success === 0) {
+        Message({
+          message: res.errorMsg || '系统错误',
+          type: 'error',
+          duration: 5 * 1000
+        })
+        return Promise.reject(new Error(res.errorMsg))
+      }
       return res
     } else if (response.status === 410) {
       MessageBox.confirm('您已经退出系统,请重新登录!', '确认', {
