@@ -221,7 +221,7 @@
         })
       },
       updateData() {
-        this.$refs['addForm'].validate(valid => {
+        this.$refs['editForm'].validate(valid => {
           if (valid) {
             const checked = this.$refs.editPermissionTree.getCheckedNodes()
             const halfChecked = this.$refs.editPermissionTree.getHalfCheckedNodes()
