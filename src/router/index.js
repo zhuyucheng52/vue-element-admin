@@ -193,7 +193,7 @@ export const constantRoutes = [
     children: [
       {
         path: 'index',
-        component: () => import('@/views/customer/index'),
+        component: () => import('@/views/customer/Customer.vue'),
         name: 'customer',
         meta: { title: '客户', icon: 'peoples', noCache: true }
       }

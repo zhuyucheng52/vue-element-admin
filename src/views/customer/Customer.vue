@@ -29,9 +29,11 @@
         width="50" align="center">
       </el-table-column>
       <el-table-column label="名称" width="260" property="name"/>
-      <el-table-column label="权限" min-width="80">
+      <el-table-column label="电话" width="140" prop="mobile"/>
+      <el-table-column label="地址" min-width="250" prop="address"/>
+      <el-table-column label="禁用" width="70" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.permissions.map(r => r.name).join(',') }}</span>
+          <el-switch v-model="scope.row.disabled" @change="checkDisabledStatus(scope.row)"/>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
@@ -58,8 +60,11 @@
         <el-form-item label="名称" prop="name">
           <el-input v-model="temp.name"/>
         </el-form-item>
-        <el-form-item label="权限" prop="permissions">
-          <el-tree ref="addPermissionTree" :data="permissionTree" :props="defaultProps" node-key="id" getCheckedNodes="" default-expand-all show-checkbox check-on-click-node/>
+        <el-form-item label="电话" prop="mobile">
+          <el-input v-model="temp.mobile"/>
+        </el-form-item>
+        <el-form-item label="地址" prop="address">
+          <el-input v-model="temp.address"/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
@@ -83,8 +88,11 @@
         <el-form-item label="名称" prop="name">
           <el-input v-model="temp.name"/>
         </el-form-item>
-        <el-form-item label="权限" prop="permissions">
-          <el-tree ref="editPermissionTree" :data="permissionTree" :props="defaultProps" node-key="id" :default-checked-keys="getDefaultCheckedKeys" default-expand-all show-checkbox check-on-click-node/>
+        <el-form-item label="电话" prop="mobile">
+          <el-input v-model="temp.mobile"/>
+        </el-form-item>
+        <el-form-item label="地址" prop="address">
+          <el-input v-model="temp.address"/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
@@ -103,13 +111,12 @@
 </template>
 
 <script>
-  import { getRoles, getRoleById, updateRole, deleteRole, addRole} from '@/api/role'
+  import { getCustomers, addCustomer, getCustomerById, updateCustomer, deleteCustomer } from '@/api/customer'
   import Pagination from '@/components/Pagination'
-  import { getPermissionTree } from '@/api/permission'
 
 
   export default {
-    name: 'Role',
+    name: 'Customer',
     components: { Pagination },
     data() {
       return {
@@ -121,36 +128,22 @@
           limit: 10,
           q: undefined
         },
-        temp: {
-          permissions: []
-        },
-        permissionTree: [],
-        defaultProps: {
-          label: 'name',
-          children: 'children'
-        },
+        temp: {},
         addFormVisible: false,
         editFormVisible: false,
         rules: {
           name: [
             { required: true, message: '角色名称不能为空', trigger: 'blur' }
-          ],
+          ]
         }
       }
     },
     created() {
       this.getList()
     },
-    computed: {
-      getDefaultCheckedKeys() {
-        return this.temp.permissions.filter(r => r.parentId !== 0).map(p => p.id)
-      }
-    },
     methods: {
       resetTemp() {
-        this.temp = {
-          permissions: []
-        }
+        this.temp = {}
       },
       clearAddForm() {
         this.resetTemp()
@@ -162,9 +155,28 @@
         this.editFormVisible = false
         this.$refs['editForm'].clearValidate()
       },
+      checkDisabledStatus(row) {
+        let msg = (!row.disabled) ? '是否启用该用户' : '是否禁用该用户'
+        this.$confirm(msg, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(r => {
+          updateCustomer({
+            id: row.id,
+            disabled: row.disabled
+          }).then(response => {
+            this.$notify({
+              title: '提示',
+              message: '更新状态成功',
+              type: 'success'
+            })
+          })
+        }).catch(() => row.disabled = !row.disabled)
+      },
       getList() {
         this.listLoading = true
-        getRoles(this.listQuery).then(response => {
+        getCustomers(this.listQuery).then(response => {
           this.list = response.data.list
           this.total = response.data.paginator.totalCount
           this.listLoading = false
@@ -173,15 +185,12 @@
       handleCreate() {
         this.resetTemp()
         this.addFormVisible = true
-        this.getPermissions()
       },
       createData() {
         this.$refs['addForm'].validate(valid => {
           if (valid) {
-            const checkedNodes = this.$refs.addPermissionTree.getCheckedNodes()
-            const halfCheckedNodes = this.$refs.addPermissionTree.getHalfCheckedNodes()
-            this.temp.permissions = [...checkedNodes, ...halfCheckedNodes]
-            addRole(this.temp).then(response => {
+            this.temp.disabled = false
+            addCustomer(this.temp).then(response => {
               this.$nextTick(() => {
                 this.getList()
                 this.clearAddForm()
@@ -190,27 +199,16 @@
           }
         })
       },
-      getPermissions() {
-        getPermissionTree().then(response => {
-          this.$nextTick(() => {
-            this.permissionTree = response.data
-          })
-        })
-      },
       handleUpdate(row) {
-        getRoleById(row.id).then(response => {
+        getCustomerById(row.id).then(response => {
           this.temp = response.data
           this.editFormVisible = true
-          this.getPermissions()
         })
       },
       updateData() {
         this.$refs['editForm'].validate(valid => {
           if (valid) {
-            const checked = this.$refs.editPermissionTree.getCheckedNodes()
-            const halfChecked = this.$refs.editPermissionTree.getHalfCheckedNodes()
-            this.temp.permissions = [...checked, ...halfChecked]
-            updateRole(this.temp).then(response => {
+            updateCustomer(this.temp).then(response => {
               this.$nextTick(() => {
                 this.getList()
                 this.clearEditForm()
@@ -221,7 +219,7 @@
       },
       handleDelete(row) {
         this.temp = Object.assign({}, row)
-        this.$confirm('是否删除该角色?', '警告', {
+        this.$confirm('是否删除该客户?', '警告', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -230,7 +228,7 @@
         }).catch(() => {})
       },
       doDelete() {
-        deleteRole(this.temp.id).then(response => {
+        deleteCustomer(this.temp.id).then(response => {
           this.$nextTick(() => {
             this.getList()
             this.resetTemp()
