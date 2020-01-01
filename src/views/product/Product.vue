@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-row>
         <el-col :span="6">
-          <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus"
+          <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" size="mini"
                      @click="handleCreate">
             添加
           </el-button>
