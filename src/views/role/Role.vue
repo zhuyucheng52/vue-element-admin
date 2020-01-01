@@ -77,7 +77,7 @@
 
 
     <!--  编辑角色额对话框  -->
-    <el-dialog title="编辑用户" :visible.sync="editFormVisible">
+    <el-dialog title="编辑角色" :visible.sync="editFormVisible">
       <el-form ref="editForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
                style="width: 400px; margin-left:80px;">
         <el-form-item label="名称" prop="name">

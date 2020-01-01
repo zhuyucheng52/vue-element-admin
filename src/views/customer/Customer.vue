@@ -9,7 +9,7 @@
           </el-button>
         </el-col>
         <el-col :span="8" :offset="10">
-          <el-input placeholder="请输入角色名称" v-model="listQuery.q" class="input-with-select"
+          <el-input placeholder="请输入客户名称,手机号搜索" v-model="listQuery.q" class="input-with-select"
                     @keyup.enter.native="getList">
             <el-button slot="append" icon="el-icon-search" @click="getList"/>
           </el-input>

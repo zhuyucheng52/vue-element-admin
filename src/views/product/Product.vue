@@ -59,7 +59,7 @@
                 @pagination="getList"/>
 
     <!--    添加商品对话框-->
-    <el-dialog title="添加类目" :visible.sync="addFormVisible">
+    <el-dialog title="添加商品" :visible.sync="addFormVisible">
       <el-form ref="addForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
                style="width: 400px; margin-left:80px;">
         <el-form-item label="名称" prop="name">
@@ -93,7 +93,7 @@
     </el-dialog>
 
     <!--  编辑商品对话框  -->
-    <el-dialog title="编辑类目" :visible.sync="editFormVisible">
+    <el-dialog title="编辑商品" :visible.sync="editFormVisible">
       <el-form ref="editForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
                style="width: 400px; margin-left:80px;">
         <el-form-item label="名称" prop="name">
