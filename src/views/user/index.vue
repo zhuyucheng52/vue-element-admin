@@ -116,7 +116,6 @@
       </div>
     </el-dialog>
 
-
     <!--  编辑用户对话框  -->
     <el-dialog title="编辑用户" :visible.sync="editFormVisible">
       <el-form ref="editForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
@@ -224,11 +223,6 @@
         this.editFormVisible = false
         this.$refs['editForm'].clearValidate()
       },
-      clearTemp() {
-        this.resetTemp()
-        this.addFormVisible = false
-        this.editFormVisible = false
-      },
       getList() {
         this.listLoading = true
         getUsers(this.listQuery).then(response => {
@@ -238,11 +232,9 @@
         })
       },
       handleCreate() {
-        this.resetTemp()
         this.addFormVisible = true
         this.$nextTick(() => {
           this.getAllRoles()
-          this.$refs['addForm'].clearValidate()
         })
       },
       createData() {
@@ -329,7 +321,7 @@
       doDelete() {
         deleteUser(this.temp.id).then(response => {
           this.getList()
-          this.clearTemp()
+          this.resetTemp()
           this.$notify.success({
             title: '提示',
             message: '删除成功'

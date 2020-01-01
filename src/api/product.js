@@ -8,6 +8,13 @@ export function getProducts(params) {
   })
 }
 
+export function getProductById(id) {
+  return request({
+    url: `/product/${id}`,
+    method: 'get'
+  })
+}
+
 export function deleteProduct(id) {
   return request({
     url: `/product/${id}`,

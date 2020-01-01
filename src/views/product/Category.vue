@@ -93,14 +93,12 @@
 </template>
 
 <script>
-  import { getRoles, getRoleById, updateRole, deleteRole, addRole} from '@/api/role'
   import { getCategories, addCategory, getCategoryById, updateCategory, deleteCategory } from '@/api/product-category'
   import Pagination from '@/components/Pagination'
-  import { getPermissionTree } from '@/api/permission'
 
 
   export default {
-    name: 'Role',
+    name: 'Category',
     components: { Pagination },
     data() {
       return {
