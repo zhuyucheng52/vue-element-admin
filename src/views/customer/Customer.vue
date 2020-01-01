@@ -177,9 +177,11 @@
       getList() {
         this.listLoading = true
         getCustomers(this.listQuery).then(response => {
-          this.list = response.data.list
-          this.total = response.data.paginator.totalCount
           this.listLoading = false
+          this.$nextTick(() => {
+            this.list = response.data.list
+            this.total = response.data.paginator.totalCount
+          })
         })
       },
       handleCreate() {
@@ -191,10 +193,8 @@
           if (valid) {
             this.temp.disabled = false
             addCustomer(this.temp).then(response => {
-              this.$nextTick(() => {
-                this.getList()
-                this.clearAddForm()
-              })
+              this.getList()
+              this.clearAddForm()
             })
           }
         })

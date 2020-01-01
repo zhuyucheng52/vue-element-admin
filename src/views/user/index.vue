@@ -205,7 +205,9 @@
     methods: {
       getAllRoles() {
         getRoles().then(response => {
-          this.allRoles = response.data.list
+          this.$nextTick(() => {
+            this.allRoles = response.data.list
+          })
         })
       },
       resetTemp() {
@@ -226,9 +228,11 @@
       getList() {
         this.listLoading = true
         getUsers(this.listQuery).then(response => {
-          this.list = response.data.list
-          this.total = response.data.paginator.totalCount
-          this.listLoading = false
+          this.$nextTick(() => {
+            this.list = response.data.list
+            this.total = response.data.paginator.totalCount
+            this.listLoading = false
+          })
         })
       },
       handleCreate() {
@@ -242,14 +246,8 @@
           if (valid) {
             this.temp.disabled = false
             addUser(this.temp).then(response => {
-              if (this.handleErrorMsg(response)) {
-                return
-              }
-
-              this.$nextTick(() => {
-                this.getList()
-                this.clearAddForm()
-              })
+              this.getList()
+              this.clearAddForm()
               this.$notify.success({
                 title: '提示',
                 message: '创建成功'
@@ -279,19 +277,10 @@
       },
       handleUpdate(row) {
         getUserById(row.id).then(response => {
-          this.$nextTick(() => {
-            this.getAllRoles()
-            this.temp = response.data
-            this.editFormVisible = true
-          })
+          this.getAllRoles()
+          this.temp = response.data
+          this.editFormVisible = true
         })
-      },
-      handleErrorMsg(response) {
-        if (response.success !== 1) {
-          this.$message.error(response.errorMsg)
-          return true
-        }
-        return false
       },
       updateData() {
         this.$refs['editForm'].validate((valid) => {
