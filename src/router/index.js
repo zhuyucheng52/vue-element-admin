@@ -148,13 +148,26 @@ export const constantRoutes = [
   //   ]
   // },
   {
+    path: '/category',
+    component: Layout,
+    redirect: '/category/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/product/Category.vue'),
+        name: 'category',
+        meta: { title: '商品类目', icon: 'example', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/product',
     component: Layout,
     redirect: '/product/index',
     children: [
       {
         path: 'index',
-        component: () => import('@/views/product/index'),
+        component: () => import('@/views/product/Product.vue'),
         name: 'product',
         meta: { title: '商品', icon: 'example', noCache: true }
       }

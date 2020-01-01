@@ -9,7 +9,7 @@
           </el-button>
         </el-col>
         <el-col :span="8" :offset="10">
-          <el-input placeholder="请输入角色名称" v-model="listQuery.q" class="input-with-select"
+          <el-input placeholder="商品编号,商品名称搜索" v-model="listQuery.q" class="input-with-select"
                     @keyup.enter.native="getList">
             <el-button slot="append" icon="el-icon-search" @click="getList"/>
           </el-input>
@@ -28,12 +28,13 @@
         type="index"
         width="50" align="center">
       </el-table-column>
-      <el-table-column label="名称" width="260" property="name"/>
-      <el-table-column label="权限" min-width="80">
+      <el-table-column label="商品编号" width="260">
         <template slot-scope="scope">
-          <span>{{ scope.row.permissions.map(r => r.name).join(',') }}</span>
+          <span>{{ scope.row.num }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="商品名称" min-width="80" property="name"/>
+      <el-table-column label="商品类目" width="200" property="name"/>
       <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button-group>
@@ -52,14 +53,17 @@
                 @pagination="getList"/>
 
     <!--    添加角色对话框-->
-    <el-dialog title="添加角色" :visible.sync="addFormVisible">
+    <el-dialog title="添加商品" :visible.sync="addFormVisible">
       <el-form ref="addForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
                style="width: 400px; margin-left:80px;">
+        <el-form-item label="编号" prop="num">
+          <el-input v-model="temp.name"/>
+        </el-form-item>
         <el-form-item label="名称" prop="name">
           <el-input v-model="temp.name"/>
         </el-form-item>
-        <el-form-item label="权限" prop="permissions">
-          <el-tree ref="addPermissionTree" :data="permissionTree" :props="defaultProps" node-key="id" getCheckedNodes="" default-expand-all show-checkbox check-on-click-node/>
+        <el-form-item label="类目" prop="category">
+          <el-input v-model="temp.name"/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
@@ -80,11 +84,14 @@
     <el-dialog title="编辑用户" :visible.sync="editFormVisible">
       <el-form ref="editForm" :rules="rules" :model="temp" label-position="left" label-width="70px"
                style="width: 400px; margin-left:80px;">
+        <el-form-item label="编号" prop="num">
+          <el-input v-model="temp.num"/>
+        </el-form-item>
         <el-form-item label="名称" prop="name">
           <el-input v-model="temp.name"/>
         </el-form-item>
-        <el-form-item label="权限" prop="permissions">
-          <el-tree ref="editPermissionTree" :data="permissionTree" :props="defaultProps" node-key="id" :default-checked-keys="getDefaultCheckedKeys" default-expand-all show-checkbox check-on-click-node/>
+        <el-form-item label="类目" prop="category">
+          <el-input v-model="temp.category"/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
@@ -104,6 +111,7 @@
 
 <script>
   import { getRoles, getRoleById, updateRole, deleteRole, addRole} from '@/api/role'
+  import { getProducts, deleteProduct, updateProduct, addProduct } from '@/api/product'
   import Pagination from '@/components/Pagination'
   import { getPermissionTree } from '@/api/permission'
 
@@ -121,20 +129,19 @@
           limit: 10,
           q: undefined
         },
-        temp: {
-          permissions: []
-        },
-        permissionTree: [],
-        defaultProps: {
-          label: 'name',
-          children: 'children'
-        },
+        temp: {},
         addFormVisible: false,
         editFormVisible: false,
         rules: {
-          name: [
-            { required: true, message: '角色名称不能为空', trigger: 'blur' }
+          num: [
+            { required: true, message: '商品编号不能为空', trigger: 'blur' }
           ],
+          name: [
+            { required: true, message: '商品名称不能为空', trigger: 'blur' }
+          ],
+          category: [
+            { required: true, message: '商品类目不能为空', trigger: 'blur'}
+          ]
         }
       }
     },
@@ -164,7 +171,7 @@
       },
       getList() {
         this.listLoading = true
-        getRoles(this.listQuery).then(response => {
+        getProducts(this.listQuery).then(response => {
           this.list = response.data.list
           this.total = response.data.paginator.totalCount
           this.listLoading = false
@@ -198,13 +205,13 @@
         })
       },
       handleUpdate(row) {
-        getRoleById(row.id).then(response => {
-          this.temp = response.data
+        // getRoleById(row.id).then(response => {
+        //   this.temp = response.data
           this.editFormVisible = true
-          this.$nextTick(() => {
-            this.getPermissions()
-          })
-        })
+        //   this.$nextTick(() => {
+        //     this.getPermissions()
+        //   })
+        // })
       },
       updateData() {
         this.$refs['editForm'].validate(valid => {

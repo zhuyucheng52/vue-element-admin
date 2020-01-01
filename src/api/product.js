@@ -10,7 +10,7 @@ export function getProducts(params) {
 
 export function deleteProduct(id) {
   return request({
-    url: '/product/' + id,
+    url: `/product/${id}`,
     method: 'delete'
   })
 }

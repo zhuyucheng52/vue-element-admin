@@ -40,11 +40,7 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="电话" width="140" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.mobile }}</span>
-        </template>
-      </el-table-column>
+      <el-table-column label="电话" width="140" property="mobile"/>
       <el-table-column label="生日" width="120" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.birthday | parseTime('{y}-{m}-{d}') }}</span>
