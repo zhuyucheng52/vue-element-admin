@@ -66,6 +66,9 @@
         <el-form-item label="地址" prop="address">
           <el-input v-model="temp.address"/>
         </el-form-item>
+        <el-form-item label="优先级">
+          <el-rate v-model="temp.priority" show-text :texts="[1,2,3,4,5]"/>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
         </el-form-item>
@@ -93,6 +96,9 @@
         </el-form-item>
         <el-form-item label="地址" prop="address">
           <el-input v-model="temp.address"/>
+        </el-form-item>
+        <el-form-item label="优先级">
+          <el-rate v-model="temp.priority" show-text :texts="[1,2,3,4,5]"/>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
@@ -128,7 +134,9 @@
           limit: 10,
           q: undefined
         },
-        temp: {},
+        temp: {
+          priority: 3
+        },
         addFormVisible: false,
         editFormVisible: false,
         rules: {
@@ -143,7 +151,9 @@
     },
     methods: {
       resetTemp() {
-        this.temp = {}
+        this.temp = {
+          priority: 3
+        }
       },
       clearAddForm() {
         this.resetTemp()

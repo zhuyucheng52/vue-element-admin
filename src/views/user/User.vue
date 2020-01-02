@@ -102,6 +102,9 @@
         <el-form-item label="生日">
           <el-date-picker v-model="temp.birthday" type="date" placeholder="请选择生日" style="width: 100%;"/>
         </el-form-item>
+        <el-form-item label="优先级">
+          <el-rate v-model="temp.priority" show-text :texts="[1,2,3,4,5]"/>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
         </el-form-item>
@@ -142,6 +145,9 @@
         <el-form-item label="生日">
           <el-date-picker v-model="temp.birthday" type="date" placeholder="请选择生日" style="width: 100%"/>
         </el-form-item>
+        <el-form-item label="优先级">
+          <el-rate v-model="temp.priority" show-text :texts="[1,2,3,4,5]"/>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入备注信息"/>
         </el-form-item>
@@ -176,7 +182,10 @@
           limit: 10,
           q: undefined
         },
-        temp: {},
+        temp: {
+          roles:[],
+          priority: 3
+        },
         allRoles: [],
         addFormVisible: false,
         editFormVisible: false,
@@ -212,7 +221,8 @@
       },
       resetTemp() {
         this.temp = {
-          roles: []
+          roles: [],
+          priority: 3
         }
       },
       clearAddForm() {

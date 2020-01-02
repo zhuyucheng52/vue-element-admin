@@ -115,7 +115,7 @@ export const constantRoutes = [
     children: [
       {
         path: 'index',
-        component: () => import('@/views/user/index'),
+        component: () => import('@/views/user/User.vue'),
         name: 'user',
         meta: { title: '用户', icon: 'user', noCache: true }
       }
@@ -180,7 +180,7 @@ export const constantRoutes = [
     children: [
       {
         path: 'index',
-        component: () => import('@/views/order/index'),
+        component: () => import('@/views/order/Order.vue'),
         name: 'order',
         meta: { title: '订单', icon: 'documentation', noCache: true }
       }

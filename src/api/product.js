@@ -37,3 +37,10 @@ export function addProduct(data) {
     data
   })
 }
+
+export function getProductsByCategoryId(categoryId) {
+  return request({
+    url: `/product/categoryid/${categoryId}`,
+    method: 'get'
+  })
+}

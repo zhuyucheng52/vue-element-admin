@@ -10,7 +10,7 @@ export function getOrders(params) {
 
 export function deleteOrder(id) {
   return request({
-    url: '/order/' + id,
+    url: `/order/${id}`,
     method: 'delete'
   })
 }

@@ -50,6 +50,14 @@ export function parseTime(time, cFormat) {
 }
 
 /**
+ * Generate a random number with current time
+ * @returns {string}
+ */
+export function generateRandomWithCurrentTime() {
+  return parseTime(new Date(), '{y}{m}{d}{h}{i}{s}') + Math.round(Math.random()*1000)
+}
+
+/**
  * @param {number} time
  * @param {string} option
  * @returns {string}
