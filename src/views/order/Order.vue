@@ -29,7 +29,7 @@
         fixed
         width="50" align="center">
       </el-table-column>
-      <el-table-column label="编号" width="100" property="num"/>
+      <el-table-column label="编号" width="160" property="num"/>
       <el-table-column label="商品名称" width="120" property="productName"/>
       <el-table-column label="件数" width="80" property="productNum"/>
       <el-table-column label="金额" width="80" property="payment"/>
@@ -79,6 +79,8 @@
               :key="item.id"
               :label="item.name"
               :value="item">
+              <span style="float: left">{{ item.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.price }}</span>
             </el-option>
           </el-select>
         </el-form-item>
@@ -96,7 +98,7 @@
           <el-input v-model="temp.productNum"/>
         </el-form-item>
         <el-form-item label="金额" prop="payment">
-          <el-input v-model="temp.payment"/>
+          <el-input v-model="temp.payment" type="number"/>
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-input v-model="temp.status"/>
@@ -161,8 +163,10 @@
           q: undefined
         },
         temp: {
-          category: {},
-          product: {}
+          category: null,
+          product: null,
+          priority: 3,
+          productNum: 1
         },
         allCategories: [],
         allProducts: [],
@@ -187,7 +191,8 @@
         this.temp = {
           category: null,
           product: null,
-          priority: 0
+          priority: 0,
+          productNum: 1
         }
       },
       clearAddForm() {
@@ -200,6 +205,14 @@
         this.editFormVisible = false
         this.$refs['editForm'].clearValidate()
       },
+      // computePayment() {
+      //   if (this.temp.product && this.temp.product.price && this.temp.productNum) {
+      //     let price = this.temp.product.price
+      //     let productNum = this.temp.productNum
+      //     this.temp.payment = price * productNum
+      //   }
+      //   console.log("Computed: " + this.temp.payment)
+      // },
       getList() {
         this.listLoading = true
         getOrders(this.listQuery).then(response => {
@@ -216,8 +229,8 @@
             this.allCategories = response.data.list
             if (this.allCategories.length > 0) {
               this.temp.category = this.allCategories[0]
+              this.getProductsByCategory()
             }
-            this.getProductsByCategory()
           })
         })
       },
@@ -227,6 +240,8 @@
             this.allProducts = response.data
             if (this.allProducts.length > 0) {
               this.temp.product = this.allProducts[0]
+            } else {
+              this.temp.product = null
             }
           })
         })
@@ -235,6 +250,9 @@
         getCustomers().then(response => {
           this.$nextTick(() => {
             this.allCustomers = response.data.list
+            if (this.allCustomers.length > 0) {
+              this.temp.customer = this.allCustomers[0]
+            }
           })
         })
       },
@@ -292,7 +310,7 @@
       },
       handleDelete(row) {
         this.temp = Object.assign({}, row)
-        this.$confirm('是否删除该类目?', '警告', {
+        this.$confirm('是否删除该订单?', '警告', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -301,12 +319,12 @@
         }).catch(() => {})
       },
       doDelete() {
-        // deleteProduct(this.temp.id).then(response => {
-        //   this.$nextTick(() => {
-        //     this.getList()
+        deleteOrder(this.temp.id).then(response => {
+          this.$nextTick(() => {
+            this.getList()
             this.resetTemp()
-          // })
-        // })
+          })
+        })
       }
     }
   }
